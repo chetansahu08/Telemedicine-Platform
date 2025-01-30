@@ -35,7 +35,7 @@ const Navbar = () => {
 
   return (
      <div className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="nav-logo">MediConnect</div>
+        <div className="nav-logo">Telemedicine</div>
       <div className="nav-links">
         <ul>
             <li><button onClick={toggleLogin}>Login</button></li>

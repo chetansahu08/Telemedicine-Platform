@@ -27,13 +27,14 @@
   font-weight: bold;
   font-family: 'Poppins', sans-serif;
   letter-spacing: 2px;
-  color: #27c2ff;
+  color: white;
   cursor: pointer;
   transition: color 0.3s ease;
+  margin-left: 20px;
 }
 
 .nav-logo:hover {
-  color: #1e9cce;
+  color: black;
 }
 
 /* Navigation links container */
@@ -54,7 +55,10 @@
 
 .nav-links li:hover {
   transform: translateY(-3px);
+
 }
+
+
 
 /* Button styling */
 .nav-links button {
