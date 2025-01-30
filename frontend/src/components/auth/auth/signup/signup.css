@@ -1,4 +1,3 @@
-/* signup.css */
 body {
   margin: 0;
   padding: 0;
@@ -21,7 +20,6 @@ body {
   position: absolute;
   left: 120px;
   height: 100%;
-  /* top: 100px; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -31,14 +29,14 @@ body {
 
 .image-section .doctors-image {
   max-width: 600px;
-  max-height: 600px;
+  max-height: 800px;
   width: auto;
   height: auto;
   border-radius: 12px;
 }
 
 .signup-container {
-  margin-left: 800px;
+  margin-left: 500px;
   width: 400px;
   background-color: #fff;
   border-radius: 12px;
@@ -118,4 +116,32 @@ body {
 
 .signup-btn:active {
   transform: scale(0.95);
+}
+.signup-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Image Section - Positioning it outside the form */
+.image-side {
+  flex: 1;
+  padding: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;  /* Make the image separate from the form */
+  left: 50px; /* Position the image to the left */
+  top: 50%;
+  transform: translateY(-50%); /* Vertically center the image */
+}
+
+.image-side img {
+  max-width: 500px;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
 }
