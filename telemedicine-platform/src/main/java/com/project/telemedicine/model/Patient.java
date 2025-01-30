@@ -1,25 +1,33 @@
 package com.project.telemedicine.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+import java.io.Serializable;
+
 @Document(collection = "patients")
-public class Patient {
-    @Id
-    private String id;
-    private String name;
-    private int age;
-    private String email;
+public class Patient extends User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Transient
+    public static final String SEQUENCE_NAME = "patient_sequence";
+
     private String medicalHistory;
-    private String password;
+    private String age;
+
+    @JsonProperty("role") // Explicitly include the role field in the JSON response
+    public String getRole() {
+        return super.getRole();
+    }
+
+    public String getAge() {
+        return age;
+    }
+    public void setAge(String age) {
+        this.age = age;
+    }
 
     public String getMedicalHistory() {
         return medicalHistory;
@@ -28,47 +36,4 @@ public class Patient {
     public void setMedicalHistory(String medicalHistory) {
         this.medicalHistory = medicalHistory;
     }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    // Getters and Setters
 }
-

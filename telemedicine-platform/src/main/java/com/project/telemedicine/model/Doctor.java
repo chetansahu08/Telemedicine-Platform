@@ -1,36 +1,43 @@
 package com.project.telemedicine.model;
 
-import lombok.*;
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+import java.io.Serializable;
+
+import java.util.List;
+
 @Document(collection = "doctors")
-public class Doctor {
-    @Id
-    private String id;
-    private String name;
+public class Doctor extends User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Transient
+    public static final String SEQUENCE_NAME = "doctor_sequence";
+
     private String specialization;
-    private String availability;
+    private float fees;
+    private List<Availability> availability;
 
-    public String getId() {
-        return id;
+    @JsonProperty("role") // Explicitly include the role field in the JSON response
+    public String getRole() {
+        return super.getRole();
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public float getFees() {
+        return fees;
+    }
+    public void setFees(float fees) {
+        this.fees = fees;
     }
 
-    public String getName() {
-        return name;
+    public List<Availability> getAvailability() {
+        return availability;
+    }
+    public void setAvailability(List<Availability> availability) {
+        this.availability = availability;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getSpecialization() {
         return specialization;
@@ -39,15 +46,4 @@ public class Doctor {
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
     }
-
-    public String getAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(String availability) {
-        this.availability = availability;
-    }
-
-    // Getters and Setters
 }
-
