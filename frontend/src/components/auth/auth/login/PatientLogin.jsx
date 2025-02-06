@@ -1,46 +1,47 @@
-import React, {useState} from 'react'
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "./login.css"
+import React from "react";
+import { useForm } from "react-hook-form";
+import "./login.css"; // Ensure this path is correct
 
-const PatientLogin = () => {
-  const [passwordShown, setPasswordShown] = useState(false);
+function PatientLogin() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const togglePasswordVisibility = () => {
-    setPasswordShown(!passwordShown);
+  const onSubmit = (data) => {
+    console.log("Patient Login Data:", data);
+    // Add your login logic here (e.g., API call)
   };
 
   return (
-    <div className="signup-container">
-      <div className="logo">
-        <h1>Login of patient</h1>
-      </div>
-      <div className="signup-form">
-        <form action="">
-          <div className="input-group">
-            <input type="email" placeholder="Email" />
-          </div>
-          <div className="input-group">
-            <input
-              type={passwordShown ? "text" : "password"}
-              placeholder="Password"
-            />
-            <button
-              type="button"
-              className="toggle-btn"
-              onClick={togglePasswordVisibility}
-            >
-              {passwordShown ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </div>
-          <div className="action">
-            <button type="submit" className="signup-btn">
-              Login
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <>
+      <h2>Patient Login</h2>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            {...register("email", { required: true })}
+          />
+          {errors.email && <span>*Email is mandatory</span>}
+        </div>
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            {...register("password", { required: true })}
+          />
+          {errors.password && <span>*Password is mandatory</span>}
+        </div>
+        <div>
+          <label>Role:</label>
+          <input type="text" value="Patient" disabled />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </>
   );
 }
 
-export default PatientLogin
+export default PatientLogin;
