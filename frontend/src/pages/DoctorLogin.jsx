@@ -1,58 +1,56 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-function DoctorLogin() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+const DoctorLogin = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const onSubmit = (data) => {
-    console.log("Doctor Login Data:", data);
-    // Add your login logic here (e.g., API call)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8080/api/auth/login', { email, password });
+      console.log(response.data); // Handle success (e.g., redirect to DoctorDashboard)
+      // Redirect logic here (e.g., navigate('/doctorDashboard'))
+      alert("Welcome, Doctor!")
+    } catch (error) {
+      console.error('Login failed:', error.response.data); // Handle error (e.g., show error message)
+      setError('Login failed. Please check your credentials.');
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Doctor Login</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-gray-600 mb-2">Email:</label>
             <input
               type="email"
-              {...register("email", { required: true })}
-              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your email"
+              required
             />
-            {errors.email && <span className="text-red-500 text-sm">*Email is mandatory</span>}
           </div>
 
           <div>
             <label className="block text-gray-600 mb-2">Password:</label>
             <input
               type="password"
-              {...register("password", { required: true })}
-              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your password"
+              required
             />
-            {errors.password && <span className="text-red-500 text-sm">*Password is mandatory</span>}
           </div>
 
-          <div>
-            <label className="block text-gray-600 mb-2">Role:</label>
-            <input
-              type="text"
-              value="Doctor"
-              disabled
-              className="w-full p-3 border rounded-lg bg-gray-100 cursor-not-allowed"
-            />
-          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
 
           <button
             type="submit"

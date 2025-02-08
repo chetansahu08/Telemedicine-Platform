@@ -16,6 +16,7 @@ import DoctorSignup from './pages/DoctorSignup'
 import PatientSignUp from './pages/PatientSignUp'
 import DoctorLogin from './pages/DoctorLogin'
 import PatientLogin from './pages/PatientLogin'
+import DoctorDashboard from './pages/DoctorDashborad'
 
 const App = () => {
   
@@ -37,6 +38,8 @@ const App = () => {
         <Route path='/patientSignup' element={<PatientSignUp/>} />
         <Route path='/doctorLogin' element={<DoctorLogin/>} />
         <Route path='/patientLogin' element={<PatientLogin/>} />
+        {/* <Route path='/doctorDashboard' element={<DoctorDashboard/>} />
+        <Route path='/patientDashboard' element={<PatientDashboard/>} /> */}
       </Routes>
       <Footer />
     </div>
