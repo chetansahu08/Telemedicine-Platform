@@ -2,7 +2,9 @@ package com.project.telemedicine.controller;
 
 import com.project.telemedicine.model.Appointment;
 import com.project.telemedicine.model.Doctor;
+import com.project.telemedicine.model.User;
 import com.project.telemedicine.repository.AppointmentRepository;
+import com.project.telemedicine.repository.UserRepository;
 import com.project.telemedicine.service.DoctorService;
 import com.project.telemedicine.utils.PdfGenerator;
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +26,9 @@ public class DoctorController {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // ✅ Get all appointments for logged-in doctor
     @GetMapping("/appointments")
@@ -94,10 +99,17 @@ public class DoctorController {
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
-    @GetMapping
-    public List<Doctor> getAllDoctors() {
-        return DoctorService.getAllDoctors();
+    @GetMapping("/")
+    public ResponseEntity<?> getAllDoctors() {
+        List<User> doctors = userRepository.findByRole("DOCTOR");
+
+        if (doctors.isEmpty()) {
+            return ResponseEntity.status(404).body("No doctors found.");
+        }
+
+        return ResponseEntity.ok(doctors);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Doctor> getDoctorById(@PathVariable String id) {

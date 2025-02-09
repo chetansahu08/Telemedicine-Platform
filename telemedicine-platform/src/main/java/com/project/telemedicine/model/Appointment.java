@@ -30,6 +30,8 @@ public class Appointment {
     private boolean isCancelled;
     private LocalDate bookingDate;
 
+    public Appointment() {}
+
     public Appointment(String doctorId, String date, String time, String status, String roomId, String patientId, double fees) {
         this.doctorId = doctorId;
         this.date = date;

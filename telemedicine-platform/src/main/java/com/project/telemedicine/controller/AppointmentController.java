@@ -2,10 +2,13 @@ package com.project.telemedicine.controller;
 
 import com.project.telemedicine.model.Appointment;
 import com.project.telemedicine.model.Doctor;
+import com.project.telemedicine.model.User;
 import com.project.telemedicine.repository.AppointmentRepository;
 import com.project.telemedicine.repository.DoctorRepository;
+import com.project.telemedicine.repository.UserRepository;
 import com.project.telemedicine.service.AppointmentService;
 import com.project.telemedicine.service.PaymentService;
+import com.project.telemedicine.service.SequenceGeneratorService;
 import com.project.telemedicine.utils.PdfGenerator;
 import com.razorpay.RazorpayException;
 import jakarta.servlet.http.HttpSession;
@@ -17,8 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
@@ -33,43 +37,74 @@ public class AppointmentController {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
+
+    @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/book")
-    public ResponseEntity<?> bookAppointment(
-            HttpSession session,
-            @RequestParam String doctorId,
-            @RequestParam String date,
-            @RequestParam String time) {
+    public ResponseEntity<?> bookAppointment(@RequestBody Map<String, Object> appointmentData) {
 
-        String patientId = (String) session.getAttribute("patientId");
-        if (patientId == null) {
-            return ResponseEntity.status(401).body("Unauthorized: Please log in first");
+        String patientId = (String) appointmentData.get("patientId");
+        String doctorId = (String) appointmentData.get("doctorId");
+        String date = (String) appointmentData.get("date");
+        String time = (String) appointmentData.get("time");
+        boolean isPaid = (boolean) appointmentData.get("isPaid");
+
+        // Fetch doctor from database
+        List<User> doctors = userRepository.findByRole("DOCTOR");
+
+        // ✅ Find the correct doctor
+        User user = doctors.stream()
+                .filter(doc -> doc.getId().equals(doctorId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("❌ Doctor not found with ID: " + doctorId));
+
+        // ✅ Check if the user is an instance of Doctor before casting
+        if (!(user instanceof Doctor)) {
+            throw new RuntimeException("❌ User with ID: " + doctorId + " is not a doctor.");
         }
 
-        // Fetch doctor details
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .filter(user -> "DOCTOR".equals(user.getRole()))
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        // ✅ Cast User to Doctor
+        Doctor doctor = (Doctor) user;
 
-        double doctorFees = doctor.getFees();
+        double doctorFees = doctor.getFees(); // Fetch doctor's consultation fee
 
-        try {
-            // ✅ Generate a payment order using doctor's fee
-            String paymentOrder = paymentService.createPaymentOrder(doctorFees);
+        System.out.println("✅ Doctor Found: " + doctor.getName() + ", Fees: " + doctorFees);
 
-            // ✅ Generate a unique room ID for WebRTC video call
-            String roomId = UUID.randomUUID().toString();
+        // Generate unique room ID for WebRTC
+        String roomId = UUID.randomUUID().toString();
 
-            // ✅ Create appointment
-            Appointment appointment = new Appointment(patientId, doctorId, date, time, "BOOKED", roomId, doctorFees);
-            appointmentRepository.save(appointment);
+        // Create appointment
+        Appointment appointment = new Appointment();
+        appointment.setId(String.valueOf(sequenceGeneratorService.generateSequence(Appointment.SEQUENCE_NAME)));
+        appointment.setPatientId(patientId);
+        appointment.setDoctorId(doctorId);
+        appointment.setDate(date);
+        appointment.setTime(time);
+        appointment.setStatus(isPaid ? "Confirmed" : "Not Confirmed");
+        appointment.setRoomId(roomId);
+        appointment.setFees(doctor.getFees());
+        appointment.setPaid(isPaid);
+        appointment.setCancelled(false);
+        appointmentRepository.save(appointment);
 
-            return ResponseEntity.ok(paymentOrder);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Payment failed: " + e.getMessage());
-        }
+        return ResponseEntity.ok("Appointment booked successfully.");
     }
+
+    @GetMapping("/patients")
+    public ResponseEntity<?> getAppointmentsByPatient(@RequestParam String patientId) {
+        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+
+        if (appointments.isEmpty()) {
+            return ResponseEntity.status(404).body("No appointments found for this patient.");
+        }
+
+        return ResponseEntity.ok(appointments);
+    }
+
 
 
     //  Confirm payment after success
@@ -111,6 +146,13 @@ public class AppointmentController {
     public ResponseEntity<Appointment> getAppointmentById(@PathVariable String id) {
         return ResponseEntity.ok(AppointmentService.getAppointmentById(id));
     }
+
+    @GetMapping("/doctors/{doctorId}")
+    public ResponseEntity<List<Appointment>> getDoctorAppointments(@PathVariable String doctorId) {
+        List<Appointment> appointments = appointmentRepository.findByDoctorId(doctorId);
+        return ResponseEntity.ok(appointments);
+    }
+
 
     @PostMapping
     public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment Appointment) {

@@ -2,33 +2,29 @@ package com.project.telemedicine.websocket;
 
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
 public class VideoCallHandler extends TextWebSocketHandler {
 
-    private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        sessions.put(session.getId(), session);
+        System.out.println("New connection: " + session.getId());
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        for (WebSocketSession webSocketSession : sessions.values()) {
-            if (!webSocketSession.getId().equals(session.getId())) {
-                webSocketSession.sendMessage(message); // Forward messages to other participant
+        for (WebSocketSession client : clients.values()) {
+            if (!client.equals(session) && client.isOpen()) {
+                client.sendMessage(message);
             }
         }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        sessions.remove(session.getId());
+        clients.values().remove(session);
     }
 }
 

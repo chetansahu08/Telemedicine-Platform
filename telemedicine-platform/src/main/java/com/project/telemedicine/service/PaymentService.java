@@ -1,6 +1,5 @@
 package com.project.telemedicine.service;
 
-
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
@@ -11,21 +10,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentService {
 
-    @Value("${razorpay.key_id}")
-    private String razorpayKey;
+    @Value("${razorpay.keyId}")
+    private String razorpayKeyId;
 
-    @Value("${razorpay.key_secret}")
-    private String razorpaySecret;
+    @Value("${razorpay.keySecret}")
+    private String razorpayKeySecret;
+
+    @Value("${razorpay.currency}")
+    private String currency;
 
     public String createPaymentOrder(double amount) throws RazorpayException {
-        RazorpayClient razorpayClient = new RazorpayClient(razorpayKey, razorpaySecret);
+        RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
-        JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", (int) (amount * 100)); // Razorpay requires amount in paise
-        orderRequest.put("currency", "INR");
-        orderRequest.put("payment_capture", 1);
+        JSONObject options = new JSONObject();
+        options.put("amount", (int)(amount * 100)); // Amount in paise
+        options.put("currency", currency);
+        options.put("receipt", "txn_123456");
+        options.put("payment_capture", 1);
 
-        Order order = razorpayClient.orders.create(orderRequest);
-        return order.toString();
+        Order order = razorpay.orders.create(options);
+        return order.toString(); // Returning order details
     }
 }

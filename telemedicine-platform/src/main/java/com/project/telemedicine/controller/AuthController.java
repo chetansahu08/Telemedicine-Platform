@@ -31,7 +31,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.registerUser(user));
     }
 
-    // ✅ Patient login and session creation
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestParam(required = false) String email,
@@ -63,11 +62,25 @@ public class AuthController {
         }
 
         // ✅ Store user details in session
-        session.setAttribute("userId", user.getId());
-        session.setAttribute("role", user.getRole());
+        session.setAttribute("user", user); // Store full user object in session
 
-        return ResponseEntity.ok(Map.of("message", "Login successful", "userId", user.getId(), "role", user.getRole()));
+        return ResponseEntity.ok(user); // ✅ Return full user object in response
     }
+
+    @GetMapping("/doctors/{doctorId}")
+    public ResponseEntity<?> getDoctorById(@PathVariable String doctorId, HttpSession session) {
+        User doctor = userRepository.findById(doctorId)
+                .filter(user -> "DOCTOR".equals(user.getRole())) // Ensure user is a doctor
+                .orElse(null);
+
+        if (doctor == null) {
+            return ResponseEntity.status(404).body("Doctor not found");
+        }
+
+        return ResponseEntity.ok(doctor); // ✅ Return full doctor data
+    }
+
+
 
     @GetMapping("/users/role/{role}")
     public ResponseEntity<List<User>> getUsersByRole(@PathVariable String role) {

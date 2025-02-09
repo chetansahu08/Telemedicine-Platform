@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface AppointmentRepository extends MongoRepository<Appointment,String> {
 
     List<Appointment> findByDoctorId(String doctorId);
+
+    List<Appointment> findByPatientId(String patientId);
 }
