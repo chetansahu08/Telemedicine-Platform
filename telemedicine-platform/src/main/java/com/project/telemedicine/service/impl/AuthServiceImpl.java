@@ -48,9 +48,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User loginUser(String email, String rawPassword) {
         // Find user by email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        User user = userRepository.findByEmail(email);
 
+        if (user == null) {
+            new ResourceNotFoundException("User not found with email: " + email);
+        }
         // Verify the password
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
