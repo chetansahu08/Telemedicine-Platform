@@ -16,7 +16,13 @@ import DoctorSignup from './pages/DoctorSignup'
 import PatientSignUp from './pages/PatientSignUp'
 import DoctorLogin from './pages/DoctorLogin'
 import PatientLogin from './pages/PatientLogin'
-import DoctorDashboard from './pages/DoctorDashborad'
+import DoctorDashboard from './pages/DoctorDashboard'
+import PatientDashboard from './pages/PatientDashboard'
+import BookingPage from './pages/BookingPage'
+import AppointmentPage from './pages/AppointmentPage'
+import VideoCall from './pages/VideoCall'
+import BookAppointment from './pages/BookAppointment'
+
 
 const App = () => {
   
@@ -38,8 +44,12 @@ const App = () => {
         <Route path='/patientSignup' element={<PatientSignUp/>} />
         <Route path='/doctorLogin' element={<DoctorLogin/>} />
         <Route path='/patientLogin' element={<PatientLogin/>} />
-        {/* <Route path='/doctorDashboard' element={<DoctorDashboard/>} />
-        <Route path='/patientDashboard' element={<PatientDashboard/>} /> */}
+        <Route path='/doctordashboard' element={<DoctorDashboard/>} />
+        <Route path='/patientdashboard' element={<PatientDashboard/>}/>
+        <Route path='/booking' element={<BookingPage/>}/>
+        <Route path='/paymentgateway' element={<AppointmentPage/>}/>
+        <Route path='/videocall/:roomId' element={<VideoCall/>}/>
+        <Route path='/bookappointment' element={<BookAppointment/>}/>
       </Routes>
       <Footer />
     </div>

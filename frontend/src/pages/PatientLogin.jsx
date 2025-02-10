@@ -12,9 +12,19 @@ const PatientLogin = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8080/api/auth/login', { email, password });
-      console.log(response.data); // Handle success (e.g., redirect to DoctorDashboard)
-      // Redirect logic here (e.g., navigate('/doctorDashboard'))
-      alert('Welcome, Patient!')
+      console.log(response.data); 
+      const userData = response.data; 
+      if (!userData || !userData.role) {
+        throw new Error("Invalid login response: User role is missing.");
+      }
+  
+      // Store user in localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+  
+      alert(`Welcome, ${userData.name}!`);
+      navigate("/patientdashboard"); 
+      window.location.reload(); // Force Navbar to re-render
+      
     } catch (error) {
       console.error('Login failed:', error.response.data); // Handle error (e.g., show error message)
       setError('Login failed. Please check your credentials.');

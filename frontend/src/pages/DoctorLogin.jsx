@@ -11,21 +11,33 @@ const DoctorLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', { email, password });
-      console.log(response.data); // Handle success (e.g., redirect to DoctorDashboard)
-      // Redirect logic here (e.g., navigate('/doctorDashboard'))
-      alert("Welcome, Doctor!")
+      const response = await axios.post("http://localhost:8080/api/auth/login", { email, password });
+  
+      // Ensure response contains user data
+      const userData = response.data; 
+      if (!userData || !userData.role) {
+        throw new Error("Invalid login response: User role is missing.");
+      }
+  
+      // Store user in localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+  
+      alert(`Welcome, ${userData.name}!`);
+      navigate("/doctordashboard"); 
+      window.location.reload(); // Force Navbar to re-render
     } catch (error) {
-      console.error('Login failed:', error.response.data); // Handle error (e.g., show error message)
-      setError('Login failed. Please check your credentials.');
+      console.error("Login failed:", error);
+      setError("Login failed. Please check your credentials.");
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Doctor Login</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email Input */}
           <div>
             <label className="block text-gray-600 mb-2">Email:</label>
             <input
@@ -38,6 +50,7 @@ const DoctorLogin = () => {
             />
           </div>
 
+          {/* Password Input */}
           <div>
             <label className="block text-gray-600 mb-2">Password:</label>
             <input
@@ -50,8 +63,10 @@ const DoctorLogin = () => {
             />
           </div>
 
+          {/* Error Message */}
           {error && <div className="text-red-500 text-sm">{error}</div>}
 
+          {/* Login Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -62,6 +77,6 @@ const DoctorLogin = () => {
       </div>
     </div>
   );
-}
+};
 
 export default DoctorLogin;

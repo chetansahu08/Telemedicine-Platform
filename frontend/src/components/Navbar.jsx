@@ -1,29 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { assets } from '../assets/assets';
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { assets } from "../assets/assets";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [showMenu, setShowMenu] = useState(false);
   const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  // Check if the user is already logged in
+  // Load user details when component mounts
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+  }, []);
+
+  // Listen for login/logout changes in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedUser = JSON.parse(localStorage.getItem("user"));
+      setUser(updatedUser);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser(null);
-    navigate('/');
+    navigate("/");
+    window.location.reload(); // Force Navbar to update after logout
   };
 
   return (
-    <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400">
-      <h1 onClick={() => navigate('/')} className="text-2xl font-bold text-primary cursor-pointer hover:text-blue-600">
+    <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-gray-400">
+      <h1 onClick={() => navigate("/")} className="text-2xl font-bold text-primary cursor-pointer hover:text-blue-600">
         Telemedicine
       </h1>
 
@@ -37,37 +49,58 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4">
         {user ? (
-          <div className="flex items-center gap-2 cursor-pointer group relative">
-            <img className="w-8 rounded-full" src={assets.profile_pic} alt="" />
-            <div className="absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block">
-              <div className="min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4">
-                <p onClick={() => navigate('/my-profile')} className="hover:text-black cursor-pointer">My Profile</p>
-                <p onClick={() => navigate('/my-appointments')} className="hover:text-black cursor-pointer">My Appointments</p>
-                <p onClick={handleLogout} className="hover:text-black cursor-pointer">Logout</p>
+          <div className="relative">
+            <img
+              className="w-8 h-8 rounded-full cursor-pointer"
+              src={assets.profile_pic}
+              alt="Profile"
+              onClick={() => setShowDropdown(!showDropdown)}
+            />
+
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg p-3 z-50">
+                <p onClick={() => navigate("/myprofile")} className="cursor-pointer hover:text-blue-600">
+                  My Profile
+                </p>
+
+                {user.role === "PATIENT" && (
+                  <>
+                  <p onClick={() => navigate("/patientdashboard")} className="cursor-pointer hover:text-blue-600">
+                    My Dashboard
+                  </p>
+                  <p onClick={() => navigate("/patientappointments")} className="cursor-pointer hover:text-blue-600">
+                      My Appointments
+                    </p>
+                  </>
+                  
+                  
+                )}
+
+                {user.role === "DOCTOR" && (
+                  <>
+                    <p onClick={() => navigate("/doctordashboard")} className="cursor-pointer hover:text-blue-600">
+                      My Dashboard
+                    </p>
+                    <p onClick={() => navigate("/doctorappointments")} className="cursor-pointer hover:text-blue-600">
+                      Appointments
+                    </p>
+                  </>
+                )}
+
+                <hr className="my-2" />
+                <p onClick={handleLogout} className="cursor-pointer text-red-500 hover:text-red-700">
+                  Logout
+                </p>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <button
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate("/signup")}
             className="bg-primary text-white px-3 py-1 rounded-full font-light hidden md:block"
           >
             Login/Signup
           </button>
-        )}
-
-        {/* Mobile Menu */}
-        <img onClick={() => setShowMenu(true)} className="w-6 md:hidden" src={assets.menu_icon} alt="" />
-        {showMenu && (
-          <div className="fixed inset-0 bg-white z-20 p-6">
-            <img src={assets.cross_icon} className="w-7" onClick={() => setShowMenu(false)} alt="" />
-            <ul className="flex flex-col mt-5 gap-4 text-lg">
-              <NavLink onClick={() => setShowMenu(false)} to="/">HOME</NavLink>
-              <NavLink onClick={() => setShowMenu(false)} to="/doctors">ALL DOCTORS</NavLink>
-              <NavLink onClick={() => setShowMenu(false)} to="/about">ABOUT</NavLink>
-              <NavLink onClick={() => setShowMenu(false)} to="/contact">CONTACT</NavLink>
-            </ul>
-          </div>
         )}
       </div>
     </div>
@@ -75,78 +108,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-// import React, { useState } from 'react'
-// import { assets } from '../assets/assets'
-// import { NavLink, useNavigate } from 'react-router-dom'
-
-// const Navbar = () => {
-
-//   const navigate = useNavigate()
-
-//   const [showMenu, setShowMenu] = useState(false)
-//   const [token, setToken] = useState(true)
-
-//   return (
-//     <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
-//       {/* Title */}
-//       <h1 onClick={() => navigate('/')} className='text-2xl font-bold text-primary cursor-pointer hover:text-blue-600'>Telemedicine</h1>
-//       <ul className='md:flex items-start gap-5 font-medium hidden'>
-//         <NavLink to='/' >
-//           <li className='py-1'>HOME</li>
-//           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
-//         </NavLink>
-//         <NavLink to='/doctors' >
-//           <li className='py-1'>ALL DOCTORS</li>
-//           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
-//         </NavLink>
-//         <NavLink to='/about' >
-//           <li className='py-1'>ABOUT</li>
-//           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
-//         </NavLink>
-//         <NavLink to='/contact' >
-//           <li className='py-1'>CONTACT</li>
-//           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
-//         </NavLink>
-//       </ul>
-
-//       <div className='flex items-center gap-4 '>
-//         {
-//           token
-//             ?  <button onClick={() => navigate('/signup')} className='bg-primary text-white px-3 py-1 rounded-full font-light hidden md:block'>Login/Signup</button>
-//             : 
-//             <div className='flex items-center gap-2 cursor-pointer group relative'>
-//                 <img className='w-8 rounded-full' src={assets.profile_pic} alt="" />
-//                 <img className='w-2.5' src={assets.dropdown_icon} alt="" />
-//                 <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
-//                   <div className='min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4'>
-//                     <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
-//                     <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
-//                     <p onClick={() => { setToken(false); navigate('/') }} className='hover:text-black cursor-pointer'>Logout</p>
-//                   </div>
-//                 </div>
-//             </div>
-             
-//         }
-//         <img onClick={() => setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt="" />
-
-//         {/* ---- Mobile Menu ---- */}
-//         <div className={`md:hidden right-0 top-0 bottom-0 z-20 overflow-hidden bg-white transition-all ${showMenu ? 'fixed w-full' : 'h-0 w-0'}`}>
-//           <div className='flex items-center justify-between px-5 py-6'>
-//             <img src={assets.logo} className='w-36' alt="" />
-//             <img onClick={() => setShowMenu(false)} src={assets.cross_icon} className='w-7' alt="" />
-//           </div>
-//           <ul className='flex flex-col items-center gap-2 mt-5 px-5 text-lg font-medium'>
-//             <NavLink onClick={() => setShowMenu(false)} to='/'><p className='px-4 py-2 rounded full inline-block'>HOME</p></NavLink>
-//             <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-4 py-2 rounded full inline-block'>ALL DOCTORS</p></NavLink>
-//             <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-4 py-2 rounded full inline-block'>ABOUT</p></NavLink>
-//             <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
-//           </ul>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default Navbar
-
