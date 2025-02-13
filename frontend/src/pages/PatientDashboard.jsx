@@ -33,14 +33,18 @@ const PatientDashboard = () => {
 
     // ✅ Fetch past appointments for this patient
     axios
-      .get(`http://localhost:8080/api/appointments?patientId=${storedUser.id}`)
-      .then((response) => {
+    .get(`http://localhost:8080/api/appointments/patient/${storedUser.id}`)
+    .then((response) => {
+      if (Array.isArray(response.data)) {
         setAppointments(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching appointments:", error);
-      });
-  }, [navigate]);
+      } else {
+        setAppointments([]); // No appointments found
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching appointments:", error);
+    });
+}, [navigate]);
 
   const handleBookAppointment = (doctor) => {
     navigate("/bookappointment", { state: { doctor } });
@@ -57,6 +61,9 @@ const PatientDashboard = () => {
         <h2 className="text-xl font-semibold mb-3 text-gray-800">Patient Details</h2>
         <p className="text-gray-600"><strong>Name:</strong> {patient.name}</p>
         <p className="text-gray-600"><strong>Email:</strong> {patient.email}</p>
+        <p className="text-gray-600"><strong>Age:</strong> {patient.age}</p>
+        <p className="text-gray-600"><strong>Medical History:</strong> {patient.medicalHistory}</p>
+        
       </div>
 
       {/* Available Doctors */}
@@ -92,6 +99,7 @@ const PatientDashboard = () => {
                 <div>
                   <p className="text-gray-600">
                     <strong>Doctor:</strong> {appointment.doctorName} | 
+                    <strong> Specialization: </strong> {appointment.specialization} | 
                     <strong> Date:</strong> {appointment.date} | 
                     <strong> Time:</strong> {appointment.time}
                   </p>
