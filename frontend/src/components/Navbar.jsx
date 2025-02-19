@@ -5,32 +5,40 @@ import { assets } from "../assets/assets";
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [admin, setAdmin] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Load user details when component mounts
+  // ✅ Load user & admin details when component mounts
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
+
     setUser(storedUser);
+    setAdmin(storedAdmin);
   }, []);
 
-  // Listen for login/logout changes in localStorage
+  // ✅ Listen for login/logout changes in localStorage
   useEffect(() => {
     const handleStorageChange = () => {
-      const updatedUser = JSON.parse(localStorage.getItem("user"));
-      setUser(updatedUser);
+      setUser(JSON.parse(localStorage.getItem("user")));
+      setAdmin(JSON.parse(localStorage.getItem("admin")));
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/");
-    window.location.reload(); // Force Navbar to update after logout
+    if (admin) {
+      localStorage.removeItem("admin"); // ✅ Logout admin
+      setAdmin(null);
+      navigate("/admin/login");
+    } else {
+      localStorage.removeItem("user"); // ✅ Logout user
+      setUser(null);
+      navigate("/");
+    }
+    window.location.reload(); // Refresh UI after logout
   };
 
   return (
@@ -48,7 +56,47 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center gap-4">
-        {user ? (
+        {/* ✅ If Admin is Logged In */}
+        {admin ? (
+          <div className="relative">
+            <img
+              className="w-8 h-8 rounded-full cursor-pointer"
+              src={assets.profile_pic}
+              alt="Admin Profile"
+              onClick={() => setShowDropdown(!showDropdown)}
+            />
+
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg p-3 z-50">
+                <p className="cursor-pointer font-semibold text-gray-700">Admin: {admin.name}</p>
+
+                <p onClick={() => navigate("/admin/dashboard")} className="cursor-pointer hover:text-blue-600">
+                  Dashboard
+                </p>
+                <p onClick={() => navigate("/admin/doctors")} className="cursor-pointer hover:text-blue-600">
+                  All Doctors
+                </p>
+                <p onClick={() => navigate("/admin/patients")} className="cursor-pointer hover:text-blue-600">
+                  All Patients
+                </p>
+                <p onClick={() => navigate("/admin/appointments")} className="cursor-pointer hover:text-blue-600">
+                  All Appointments
+                </p>
+                <p onClick={() => navigate("/admin/prescriptions")} className="cursor-pointer hover:text-blue-600">
+                  All Prescriptions
+                </p>
+                <p onClick={() => navigate("/admin/billings")} className="cursor-pointer hover:text-blue-600">
+                  All Billings
+                </p>
+
+                <hr className="my-2" />
+                <p onClick={handleLogout} className="cursor-pointer text-red-500 hover:text-red-700">
+                  Logout
+                </p>
+              </div>
+            )}
+          </div>
+        ) : user ? (
           <div className="relative">
             <img
               className="w-8 h-8 rounded-full cursor-pointer"
@@ -65,15 +113,16 @@ const Navbar = () => {
 
                 {user.role === "PATIENT" && (
                   <>
-                  <p onClick={() => navigate("/patientdashboard")} className="cursor-pointer hover:text-blue-600">
-                    My Dashboard
-                  </p>
-                  <p onClick={() => navigate("/patientappointments")} className="cursor-pointer hover:text-blue-600">
+                    <p onClick={() => navigate("/patientdashboard")} className="cursor-pointer hover:text-blue-600">
+                      My Dashboard
+                    </p>
+                    <p onClick={() => navigate("/myappointments")} className="cursor-pointer hover:text-blue-600">
                       My Appointments
                     </p>
+                    <p onClick={() => navigate("/mybillings")} className="hover:text-blue-600 cursor-pointer">
+                      My Billings
+                    </p>
                   </>
-                  
-                  
                 )}
 
                 {user.role === "DOCTOR" && (

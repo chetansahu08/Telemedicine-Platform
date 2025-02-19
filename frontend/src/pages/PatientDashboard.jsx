@@ -7,6 +7,8 @@ const PatientDashboard = () => {
   const [patient, setPatient] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  
 
   useEffect(() => {
     // ✅ Get logged-in patient from localStorage
@@ -31,19 +33,7 @@ const PatientDashboard = () => {
         console.error("Error fetching doctors:", error);
       });
 
-    // ✅ Fetch past appointments for this patient
-    axios
-    .get(`http://localhost:8080/api/appointments/patient/${storedUser.id}`)
-    .then((response) => {
-      if (Array.isArray(response.data)) {
-        setAppointments(response.data);
-      } else {
-        setAppointments([]); // No appointments found
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching appointments:", error);
-    });
+    
 }, [navigate]);
 
   const handleBookAppointment = (doctor) => {
@@ -89,38 +79,10 @@ const PatientDashboard = () => {
         </div>
       </div>
 
-      {/* Previous Appointments */}
-      <div className="bg-white shadow-lg rounded-2xl p-6">
-        <h2 className="text-xl font-semibold mb-3 text-gray-800">Your Appointments</h2>
-        {appointments.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {appointments.map((appointment, index) => (
-              <li key={index} className="py-4 flex flex-col md:flex-row md:justify-between">
-                <div>
-                  <p className="text-gray-600">
-                    <strong>Doctor:</strong> {appointment.doctorName} | 
-                    <strong> Specialization: </strong> {appointment.specialization} | 
-                    <strong> Date:</strong> {appointment.date} | 
-                    <strong> Time:</strong> {appointment.time}
-                  </p>
-                </div>
+      
+      
+      
 
-                {/* 🔹 Connect Button (Only if CONFIRMED & has a roomId) */}
-                {appointment.status === "Confirmed" && appointment.roomId && (
-                  <button
-                    onClick={() => navigate(`/videocall/${appointment.roomId}`)}
-                    className="mt-2 md:mt-0 px-4 py-2 bg-green-500 text-white rounded-lg"
-                  >
-                    Connect
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">No appointments found.</p>
-        )}
-      </div>
     </div>
   );
 };

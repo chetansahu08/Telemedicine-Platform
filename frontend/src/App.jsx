@@ -22,6 +22,19 @@ import BookingPage from './pages/BookingPage'
 import AppointmentPage from './pages/AppointmentPage'
 import VideoCall from './pages/VideoCall'
 import BookAppointment from './pages/BookAppointment'
+import MyBillings from './pages/MyBillings'
+import DoctorAppointments from './pages/DoctorAppointment'
+import AddPrescription from './pages/AddPrescription'
+import AdminLogin from './pages/AdminLogin'
+import AdminRegister from './pages/AdminRegister'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminAllDoctors from './pages/AdminAllDoctors'
+import AdminAllPatients from './pages/AdminAllPatients'
+import AdminAllAppointments from './pages/AdminAllAppointments'
+import AdminAllPrescriptions from './pages/AdminAllPrescriptions'
+import EditPatient from './pages/EditPatient'
+import EditDoctor from './pages/EditDoctor'
+import AdminAllBillings from './pages/AdminAllBillings'
 
 
 const App = () => {
@@ -38,8 +51,7 @@ const App = () => {
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/appointment/:docId' element={<Appointment />} />
-        <Route path='/my-appointments' element={<MyAppointments />} />
-        <Route path='/my-profile' element={<MyProfile />} />
+        <Route path='/myprofile' element={<MyProfile />} />
         <Route path='/doctorSignup' element={<DoctorSignup/>} />
         <Route path='/patientSignup' element={<PatientSignUp/>} />
         <Route path='/doctorLogin' element={<DoctorLogin/>} />
@@ -50,6 +62,22 @@ const App = () => {
         <Route path='/paymentgateway' element={<AppointmentPage/>}/>
         <Route path='/videocall/:roomId' element={<VideoCall/>}/>
         <Route path='/bookappointment' element={<BookAppointment/>}/>
+        <Route path='/mybillings' element={<MyBillings/>}/>
+        <Route path='/myappointments' element={<MyAppointments/>}/>
+        <Route path='/doctorappointments' element={<DoctorAppointments/>}/>
+        <Route path='/addprescription' element={<AddPrescription/>}/>
+        <Route path='/admin/login' element={<AdminLogin/>}/>
+        <Route path='/admin/register' element={<AdminRegister/>}/>
+        <Route path='/admin/dashboard' element={<AdminDashboard/>}/>
+        <Route path='/admin/doctors' element={<AdminAllDoctors/>}/>
+        <Route path='/admin/patients' element={<AdminAllPatients/>}/>
+        <Route path='/admin/appointments' element={<AdminAllAppointments/>}/>
+        <Route path='/admin/prescriptions' element={<AdminAllPrescriptions/>}/>
+        <Route path='/admin/editpatient/:id' element={<EditPatient/>}/>
+        <Route path="/admin/edit-doctor/:id" element={<EditDoctor/>} />
+        <Route path="/admin/billings" element={<AdminAllBillings />} />
+
+
       </Routes>
       <Footer />
     </div>

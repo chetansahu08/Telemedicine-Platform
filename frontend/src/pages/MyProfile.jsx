@@ -1,95 +1,116 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const MyProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [updatedUser, setUpdatedUser] = useState({});
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) {
-      alert("Unauthorized access!");
+      alert("Unauthorized access. Redirecting...");
       navigate("/login");
       return;
     }
-    setUser(storedUser);
-    
-    axios.get(`http://localhost:8080/api/profile/${storedUser.id}`)
-      .then((response) => {
+
+    axios.get(`http://localhost:8080/api/auth/${storedUser.id}`)
+      .then(response => {
         setUser(response.data);
-        setUpdatedUser(response.data);
+        setFormData(response.data);
+        setLoading(false);
       })
-      .catch((error) => console.error("Error fetching profile:", error));
+      .catch(error => {
+        console.error("Error fetching profile:", error);
+        setLoading(false);
+      });
   }, [navigate]);
 
   const handleChange = (e) => {
-    setUpdatedUser({ ...updatedUser, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ✅ Handle profile update
   const handleUpdate = () => {
-    axios.put(`http://localhost:8080/api/profile/${user.id}`, updatedUser)
-      .then((response) => {
-        setUser(response.data);
-        localStorage.setItem("user", JSON.stringify(response.data));
+    axios.put(`http://localhost:8080/api/auth/${user.id}`, formData)
+      .then(() => {
         alert("Profile updated successfully!");
+        localStorage.setItem("user", JSON.stringify(formData));
+        navigate("/myprofile");
       })
-      .catch((error) => console.error("Error updating profile:", error));
+      .catch(error => console.error("Error updating profile:", error));
   };
 
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete your account?")) {
-      axios.delete(`http://localhost:8080/api/profile/${user.id}`)
+  // ✅ Handle account deletion
+  const handleDeleteAccount = () => {
+    if (window.confirm("Are you sure you want to delete your account? This action is irreversible!")) {
+      axios.delete(`http://localhost:8080/api/auth/${user.id}`)
         .then(() => {
+          alert("Account deleted successfully.");
           localStorage.removeItem("user");
-          navigate("/signup");
+          navigate("/login");
         })
-        .catch((error) => console.error("Error deleting account:", error));
+        .catch(error => console.error("Error deleting account:", error));
     }
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (loading) return <p className="text-center mt-5">Loading profile...</p>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">My Profile</h1>
+    <div className="p-6 max-w-xl mx-auto bg-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">My Profile</h2>
+      <form className="space-y-4">
+        <div>
+          <label className="block font-medium">Name</label>
+          <input type="text" name="name" value={formData.name || ""} onChange={handleChange} className="w-full p-2 border rounded-md" />
+        </div>
 
-      <div className="mt-4 p-4 border rounded-md shadow">
-        <label className="block text-sm font-medium">Name:</label>
-        <input type="text" name="name" value={updatedUser.name} onChange={handleChange} className="w-full p-2 border rounded" />
+        <div>
+          <label className="block font-medium">Email</label>
+          <input type="email" name="email" value={formData.email || ""} onChange={handleChange} className="w-full p-2 border rounded-md" />
+        </div>
 
-        <label className="block text-sm font-medium mt-3">Email:</label>
-        <input type="email" name="email" value={updatedUser.email} onChange={handleChange} className="w-full p-2 border rounded" />
-
+        {/* Doctor-specific fields */}
         {user.role === "DOCTOR" && (
           <>
-            <label className="block text-sm font-medium mt-3">Specialization:</label>
-            <input type="text" name="specialization" value={updatedUser.specialization || ""} onChange={handleChange} className="w-full p-2 border rounded" />
-
-            <label className="block text-sm font-medium mt-3">Consultation Fees:</label>
-            <input type="number" name="fees" value={updatedUser.fees || ""} onChange={handleChange} className="w-full p-2 border rounded" />
+            <div>
+              <label className="block font-medium">Specialization</label>
+              <input type="text" name="specialization" value={formData.specialization || ""} onChange={handleChange} className="w-full p-2 border rounded-md" />
+            </div>
+            <div>
+              <label className="block font-medium">Consultation Fees</label>
+              <input type="number" name="fees" value={formData.fees || ""} onChange={handleChange} className="w-full p-2 border rounded-md" />
+            </div>
           </>
         )}
 
+        {/* Patient-specific fields */}
         {user.role === "PATIENT" && (
           <>
-            <label className="block text-sm font-medium mt-3">Medical History:</label>
-            <textarea name="medicalHistory" value={updatedUser.medicalHistory || ""} onChange={handleChange} className="w-full p-2 border rounded"></textarea>
-
-            <label className="block text-sm font-medium mt-3">Age:</label>
-            <input type="number" name="age" value={updatedUser.age || ""} onChange={handleChange} className="w-full p-2 border rounded" />
+            <div>
+              <label className="block font-medium">Age</label>
+              <input type="number" name="age" value={formData.age || ""} onChange={handleChange} className="w-full p-2 border rounded-md" />
+            </div>
+            <div>
+              <label className="block font-medium">Medical History</label>
+              <textarea name="medicalHistory" value={formData.medicalHistory || ""} onChange={handleChange} className="w-full p-2 border rounded-md"></textarea>
+            </div>
           </>
         )}
 
-        <button onClick={handleUpdate} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
-          Update Profile
-        </button>
+        {/* Patient-specific fields */}
+        {user.role === "ADMIN" && (
+          <>
+            
+            
+          </>
+        )}
 
-        <button onClick={handleDelete} className="mt-4 bg-red-500 text-white px-4 py-2 rounded ml-2">
-          Delete Account
-        </button>
-      </div>
+        <button type="button" onClick={handleUpdate} className="w-full bg-blue-500 text-white py-2 rounded-md">Update Profile</button>
+        <button type="button" onClick={handleDeleteAccount} className="w-full bg-red-500 text-white py-2 rounded-md mt-2">Delete Account</button>
+      </form>
     </div>
   );
 };

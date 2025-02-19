@@ -1,37 +1,100 @@
-import React, { useContext } from 'react'
-import { AppContext } from '../context/AppContext'
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const MyAppointments = () => {
+  const navigate = useNavigate();
+  const [appointments, setAppointments] = useState([]);
+  const [prescriptions, setPrescriptions] = useState({});
 
-    const { doctors } = useContext(AppContext)
+  useEffect(() => {
+    // ✅ Get logged-in patient from localStorage
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-    return (
-        <div>
-            <p className='pb-3 mt-12 font-medium text-zinc-700 border-b'>My appointments</p>
-            <div className=''>
-                {doctors.slice(0, 2).map((item, index) => (
-                    <div key={index} className='grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border-b'>
-                        <div>
-                            <img className='w-32 bg-indigo-50' src={item.image} alt="" />
-                        </div>
-                        <div className='flex-1 text-sm text-zinc-600'>
-                            <p className='text-neutral-800 font-semibold'>{item.name}</p>
-                            <p>{item.speciality}</p>
-                            <p className='text-zinc-700 font-medium mt-1'>Address:</p>
-                            <p className='text-xs'>{item.address.line1}</p>
-                            <p className='text-xs'>{item.address.line2}</p>
-                            <p className='text-xs mt-1'><span className='text-sm text-neutral-700 font-medium'>Date & Time:</span> 25, July, 2024 |  8:30 PM</p>
-                        </div>
-                        <div></div>
-                        <div className='flex flex-col gap-2 justify-end'>
-                            <button className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300'>Pay Online</button>
-                            <button className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'>Cancel appointment</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
+    if (!storedUser || storedUser.role !== "PATIENT") {
+      alert("Unauthorized access. Redirecting...");
+      navigate("/login");
+      return;
+    }
 
-export default MyAppointments
+    // ✅ Fetch Appointments
+    axios
+      .get(`http://localhost:8080/api/appointments/patient/${storedUser.id}`)
+      .then((response) => {
+        console.log("Fetched Appointments:", response.data); // ✅ Debugging
+        if (Array.isArray(response.data)) {
+          setAppointments(response.data);
+
+          // ✅ Fetch prescriptions for appointments that have a prescriptionId
+          response.data.forEach((appointment) => {
+            if (appointment.prescriptionId) {
+              axios
+                .get(`http://localhost:8080/api/prescriptions/${appointment.prescriptionId}`)
+                .then((res) => {
+                  setPrescriptions((prev) => ({
+                    ...prev,
+                    [appointment.prescriptionId]: res.data,
+                  }));
+                })
+                .catch((err) => console.error("Error fetching prescription:", err));
+            }
+          });
+        } else {
+          setAppointments([]);
+        }
+      })
+      .catch((error) => console.error("Error fetching appointments:", error));
+  }, [navigate]);
+
+  return (
+    <div className="bg-gray-100 p-8 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">My Appointments</h1>
+
+      <div className="bg-white shadow-lg rounded-2xl p-6">
+        <h2 className="text-xl font-semibold mb-3 text-gray-800">Your Appointments</h2>
+        {appointments.length > 0 ? (
+          <ul className="divide-y divide-gray-200">
+            {appointments.map((appointment, index) => (
+              <li key={index} className="py-4 flex flex-col md:flex-row md:justify-between">
+                <div>
+                  <p className="text-gray-600">
+                    <strong>Doctor:</strong> {appointment.doctorName} | 
+                    <strong> Specialization: </strong> {appointment.specialization} | 
+                    <strong> Date:</strong> {appointment.date} | 
+                    <strong> Time:</strong> {appointment.time}
+                  </p>
+                </div>
+
+                {/* 🔹 Show Download Prescription Button Only if Prescription Exists */}
+                {appointment.prescriptionId && prescriptions[appointment.prescriptionId] && (
+                  <button
+                    className="bg-blue-500 text-white px-3 py-2 rounded mt-2 md:mt-0"
+                    onClick={() =>
+                      window.open(`http://localhost:8080/api/prescriptions/${appointment.prescriptionId}/download`)
+                    }
+                  >
+                    Download Prescription
+                  </button>
+                )}
+
+                {/* 🔹 Connect Button (Only if CONFIRMED & has a roomId) */}
+                {appointment.status === "Confirmed" && appointment.roomId && (
+                  <button
+                    onClick={() => navigate(`/videocall/${appointment.roomId}`)}
+                    className="mt-2 md:mt-0 px-4 py-2 bg-green-500 text-white rounded-lg"
+                  >
+                    Connect
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No appointments found.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MyAppointments;
